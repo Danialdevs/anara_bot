@@ -10,7 +10,7 @@ const storage = require('./storage');
 
 // ============ CONFIGURATION ============
 const EXPIRY_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month)
-const CHECK_INTERVAL = 3 * 60 * 60 * 1000; // Every 3 hours
+const CHECK_INTERVAL = 1 * 60 * 1000; // Every 1 minute
 const ADMIN_PORT = 3000;
 const TARGET_GROUP_IDS = [
     '120363424613797548@g.us', // РАССЫЛКИ
@@ -301,9 +301,9 @@ client.on('group_update', async (notification) => {
     }
 });
 
-// Check for expired users at 3:00 AM daily
+// Check for expired users every 1 minute
 async function checkExpiredAndRemove() {
-    console.log('🕐 Running daily expiry check...');
+    console.log('🕐 Running expiry check...');
     const expiredUsers = storage.checkExpiredUsers(EXPIRY_TIME_MS);
     if (expiredUsers.length > 0) {
         console.log(`⏰ Found ${expiredUsers.length} expired`);
