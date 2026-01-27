@@ -12,6 +12,7 @@ const EXPIRY_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month)
 const CHECK_INTERVAL = 3 * 60 * 60 * 1000; // Every 3 hours
 const ADMIN_PORT = 3000;
 const TARGET_GROUP_IDS = [];
+const NOTIFY_PHONE = '77054019576@c.us'; // +7 705 401 9576
 
 // ============ EXPRESS + SOCKET.IO ============
 const app = express();
@@ -54,6 +55,16 @@ function formatPhone(userId) {
 
     // Other countries - just add + prefix
     return '+' + phone;
+}
+
+// Send notification to admin phone
+async function sendNotification(message) {
+    try {
+        await client.sendMessage(NOTIFY_PHONE, message);
+        console.log('📩 Notification sent');
+    } catch (err) {
+        console.error('Failed to send notification:', err.message);
+    }
 }
 
 // API: Get users with search
@@ -192,6 +203,9 @@ client.on('group_join', async (notification) => {
         console.log(`  Tracking: ${realUserId}`);
         storage.addUser(chatId, realUserId);
         io.emit('user_added', { chatId, userId: realUserId });
+
+        // Send notification
+        sendNotification(`✅ Новый участник добавлен\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
     }
 });
 
