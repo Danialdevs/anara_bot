@@ -64,10 +64,18 @@ function formatPhone(userId) {
 // Send notification to WhatsApp
 async function sendNotification(message) {
     try {
-        await client.sendMessage(NOTIFY_PHONE, message);
+        // Try to get chat object first to ensure it's loaded
+        const chat = await client.getChatById(NOTIFY_PHONE);
+        await chat.sendMessage(message);
         console.log('📩 WhatsApp notification sent to', NOTIFY_PHONE);
     } catch (err) {
-        console.error('❌ Failed to send WhatsApp notification:', err.message);
+        console.error('❌ First attempt failed, retrying direct send:', err.message);
+        try {
+            await client.sendMessage(NOTIFY_PHONE, message);
+            console.log('📩 WhatsApp notification sent (direct)');
+        } catch (e) {
+            console.error('❌ Failed to send WhatsApp notification:', e.message);
+        }
     }
 }
 
