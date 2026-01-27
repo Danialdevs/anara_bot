@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# WhatsApp session data
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Test files
+test_storage.js
+
+# Old server file (merged into index.js)
+server.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
