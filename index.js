@@ -269,7 +269,7 @@ async function checkExpiredAndRemove() {
     }
 }
 
-// Check every 3 hours
+// Check every 1 minute
 setInterval(checkExpiredAndRemove, CHECK_INTERVAL);
 
 client.initialize();
