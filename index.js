@@ -255,6 +255,9 @@ async function checkExpiredAndRemove() {
                     console.log(`  ❌ Removed: ${user.userId}`);
                     storage.markUserRemoved(user.chatId, user.userId);
                     io.emit('user_removed', { chatId: user.chatId, userId: user.userId });
+
+                    // Send notification about removal
+                    sendNotification(`❌ Участник удалён (истёк срок)\n📱 ${formatPhone(user.userId)}\n📋 Группа: ${user.chatId.split('@')[0]}`);
                 }
             } catch (err) {
                 console.error(`  ⚠️ Failed:`, err.message);
