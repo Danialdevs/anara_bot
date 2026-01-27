@@ -16,9 +16,7 @@ const TARGET_GROUP_IDS = [
     '120363424485707391@g.us', // ЗАКАЗЫ
     '120363407941956163@g.us'  // ЧАТ БОЛТАЛКА
 ];
-// Telegram notification config
-const TELEGRAM_BOT_TOKEN = '8422642881:AAEQnGsZ_yb-dtdKNiEJf40d50jjN46B9zk';
-const TELEGRAM_CHAT_ID = '6968636030';
+const NOTIFY_PHONE = '77079177470@c.us'; // +7 707 917 7470
 
 // ============ EXPRESS + SOCKET.IO ============
 const app = express();
@@ -63,33 +61,13 @@ function formatPhone(userId) {
     return '+' + phone;
 }
 
-// Send notification to Telegram
+// Send notification to WhatsApp
 async function sendNotification(message) {
-    console.log('📤 Sending Telegram notification...');
-    console.log('   Chat ID:', TELEGRAM_CHAT_ID);
-    console.log('   Message:', message.substring(0, 50) + '...');
-
     try {
-        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CHAT_ID,
-                text: message
-            })
-        });
-        const data = await response.json();
-        console.log('   Telegram response:', JSON.stringify(data));
-
-        if (data.ok) {
-            console.log('📩 Telegram notification sent successfully!');
-        } else {
-            console.error('❌ Telegram error:', data.error_code, data.description);
-        }
+        await client.sendMessage(NOTIFY_PHONE, message);
+        console.log('📩 WhatsApp notification sent to', NOTIFY_PHONE);
     } catch (err) {
-        console.error('❌ Failed to send Telegram notification:', err.message);
-        console.error('   Full error:', err);
+        console.error('❌ Failed to send WhatsApp notification:', err.message);
     }
 }
 
