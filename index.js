@@ -229,7 +229,7 @@ client.on('group_join', async (notification) => {
         io.emit('user_added', { chatId, userId: realUserId });
 
         // Send notification
-        sendNotification(`✅ Новый участник добавлен\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
+        await sendNotification(`✅ Новый участник добавлен\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
     }
 });
 
@@ -273,7 +273,7 @@ async function checkExpiredAndRemove() {
                     io.emit('user_removed', { chatId: user.chatId, userId: user.userId });
 
                     // Send notification about removal
-                    sendNotification(`❌ Участник удалён (истёк срок)\n📱 ${formatPhone(user.userId)}\n📋 Группа: ${user.chatId.split('@')[0]}`);
+                    await sendNotification(`❌ Участник удалён (истёк срок)\n📱 ${formatPhone(user.userId)}\n📋 Группа: ${user.chatId.split('@')[0]}`);
                 }
             } catch (err) {
                 console.error(`  ⚠️ Failed:`, err.message);
