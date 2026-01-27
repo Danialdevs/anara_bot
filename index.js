@@ -1,3 +1,4 @@
+const https = require('https');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
@@ -17,6 +18,10 @@ const TARGET_GROUP_IDS = [
     '120363407941956163@g.us'  // ЧАТ БОЛТАЛКА
 ];
 const NOTIFY_PHONE = '77079177470@c.us'; // +7 707 917 7470
+
+// Telegram Configuration
+const TELEGRAM_BOT_TOKEN = '8422642881:AAEQnGsZ_yb-dtdKNiEJf40d50jjN46B9zk';
+const TELEGRAM_CHAT_IDS = ['6968636030', '8487168924'];
 
 // ============ EXPRESS + SOCKET.IO ============
 const app = express();
@@ -61,8 +66,45 @@ function formatPhone(userId) {
     return '+' + phone;
 }
 
-// Send notification to WhatsApp
+// Send notification to Telegram
+function sendTelegramNotification(message) {
+    TELEGRAM_CHAT_IDS.forEach(chatId => {
+        const data = JSON.stringify({
+            chat_id: chatId,
+            text: message
+        });
+
+        const options = {
+            hostname: 'api.telegram.org',
+            path: `/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(data) // Use Buffer.byteLength for UTF-8 characters
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            if (res.statusCode !== 200) {
+                console.error(`❌ Telegram API error (${chatId}): ${res.statusCode}`);
+                res.on('data', d => process.stdout.write(d)); // Log error body
+            } else {
+                console.log(`📩 Telegram notification sent to ${chatId}`);
+            }
+        });
+
+        req.on('error', (e) => {
+            console.error(`❌ Telegram request error (${chatId}): ${e.message}`);
+        });
+
+        req.write(data);
+        req.end();
+    });
+}
+
+// Send notification to WhatsApp and Telegram
 async function sendNotification(message) {
+    // 1. WhatsApp
     try {
         // Try to get chat object first to ensure it's loaded
         const chat = await client.getChatById(NOTIFY_PHONE);
@@ -76,6 +118,13 @@ async function sendNotification(message) {
         } catch (e) {
             console.error('❌ Failed to send WhatsApp notification:', e.message);
         }
+    }
+
+    // 2. Telegram
+    try {
+        sendTelegramNotification(message);
+    } catch (err) {
+        console.error('❌ Failed to send Telegram notification:', err.message);
     }
 }
 
