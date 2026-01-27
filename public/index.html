@@ -376,6 +376,9 @@
                     <td>
                         <select onchange="updateExpiry(${u.id}, this.value)">
                             <option value="" ${!u.expiresAt ? 'selected' : ''}>По умолчанию</option>
+                            <option value="2min" ${u.expiresAt === '2min' ? 'selected' : ''}>2 мин (тест)</option>
+                            <option value="5min" ${u.expiresAt === '5min' ? 'selected' : ''}>5 мин (тест)</option>
+                            <option value="10min" ${u.expiresAt === '10min' ? 'selected' : ''}>10 мин (тест)</option>
                             <option value="1month" ${u.expiresAt === '1month' ? 'selected' : ''}>1 месяц</option>
                             <option value="2months" ${u.expiresAt === '2months' ? 'selected' : ''}>2 месяца</option>
                             <option value="3months" ${u.expiresAt === '3months' ? 'selected' : ''}>3 месяца</option>

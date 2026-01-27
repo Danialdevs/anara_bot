@@ -70,6 +70,9 @@ function checkExpiredUsers(defaultExpiryMs) {
 
     // Expiry presets in milliseconds
     const expiryPresets = {
+        '2min': 2 * 60 * 1000,      // 2 minutes (test)
+        '5min': 5 * 60 * 1000,      // 5 minutes (test)
+        '10min': 10 * 60 * 1000,    // 10 minutes (test)
         '1month': 30 * 24 * 60 * 60 * 1000,
         '2months': 60 * 24 * 60 * 60 * 1000,
         '3months': 90 * 24 * 60 * 60 * 1000,
