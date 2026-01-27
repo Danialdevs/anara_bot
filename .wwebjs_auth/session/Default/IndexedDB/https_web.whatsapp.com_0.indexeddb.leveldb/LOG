@@ -1,0 +1,71 @@
+2026/01/27-15:26:25.754 1004a Reusing MANIFEST /Users/danial/Desktop/projects/anara_bot/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2026/01/27-15:26:25.755 1004a Recovering log #2265
+2026/01/27-15:26:25.761 1004a Reusing old log /Users/danial/Desktop/projects/anara_bot/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/002265.log 
+2026/01/27-15:26:26.371 1004d Compacting 1@1 + 4@2 files
+2026/01/27-15:26:26.406 1004d Generated table #2286@1: 88167 keys, 2253703 bytes
+2026/01/27-15:26:26.429 1004d Generated table #2287@1: 25089 keys, 2199457 bytes
+2026/01/27-15:26:26.464 1004d Generated table #2288@1: 67503 keys, 2234956 bytes
+2026/01/27-15:26:26.487 1004d Generated table #2289@1: 31048 keys, 2191468 bytes
+2026/01/27-15:26:26.488 1004d Generated table #2290@1: 20 keys, 14180 bytes
+2026/01/27-15:26:26.488 1004d Compacted 1@1 + 4@2 files => 8893764 bytes
+2026/01/27-15:26:26.491 1004d compacted to: files[ 0 1 55 0 0 0 0 ]
+2026/01/27-15:26:26.491 1004d Delete type=2 #2272
+2026/01/27-15:26:26.491 1004d Delete type=2 #2250
+2026/01/27-15:26:26.491 1004d Delete type=2 #2251
+2026/01/27-15:26:26.491 1004d Delete type=2 #2253
+2026/01/27-15:26:26.491 1004d Delete type=2 #2252
+2026/01/27-15:26:32.861 1004d Compacting 1@1 + 2@2 files
+2026/01/27-15:26:32.879 1004d Generated table #2291@1: 2823 keys, 2145765 bytes
+2026/01/27-15:26:32.892 1004d Generated table #2292@1: 3075 keys, 2151671 bytes
+2026/01/27-15:26:32.895 1004d Generated table #2293@1: 3 keys, 3129 bytes
+2026/01/27-15:26:32.895 1004d Compacted 1@1 + 2@2 files => 4300565 bytes
+2026/01/27-15:26:32.899 1004d compacted to: files[ 0 0 56 0 0 0 0 ]
+2026/01/27-15:26:32.900 1004d Delete type=2 #2273
+2026/01/27-15:26:32.900 1004d Delete type=2 #2162
+2026/01/27-15:26:32.900 1004d Delete type=2 #2161
+2026/01/27-15:26:34.345 1004d Level-0 table #2295: started
+2026/01/27-15:26:34.378 1004d Level-0 table #2295: 1181577 bytes OK
+2026/01/27-15:26:34.382 1004d Delete type=0 #2265
+2026/01/27-15:26:34.437 1004d Compacting 1@0 + 0@1 files
+2026/01/27-15:26:34.450 1004d Generated table #2296@0: 26402 keys, 545934 bytes
+2026/01/27-15:26:34.451 1004d Generated table #2297@0: 1584 keys, 81649 bytes
+2026/01/27-15:26:34.451 1004d Compacted 1@0 + 0@1 files => 627583 bytes
+2026/01/27-15:26:34.454 1004d compacted to: files[ 0 2 56 0 0 0 0 ]
+2026/01/27-15:26:34.454 1004d Delete type=2 #2295
+2026/01/27-15:26:34.536 1004d Compacting 1@1 + 10@2 files
+2026/01/27-15:26:34.569 1004d Generated table #2298@1: 26256 keys, 2230578 bytes
+2026/01/27-15:26:34.603 1004d Generated table #2299@1: 90779 keys, 2267643 bytes
+2026/01/27-15:26:34.633 1004d Generated table #2300@1: 21650 keys, 2279150 bytes
+2026/01/27-15:26:34.651 1004d Generated table #2301@1: 7198 keys, 2126157 bytes
+2026/01/27-15:26:34.671 1004d Generated table #2302@1: 23887 keys, 2150214 bytes
+2026/01/27-15:26:34.710 1004d Generated table #2303@1: 104234 keys, 2256618 bytes
+2026/01/27-15:26:34.745 1004d Generated table #2304@1: 99222 keys, 2248556 bytes
+2026/01/27-15:26:34.783 1004d Generated table #2305@1: 99055 keys, 2249009 bytes
+2026/01/27-15:26:34.815 1004d Generated table #2306@1: 98180 keys, 2249076 bytes
+2026/01/27-15:26:34.840 1004d Generated table #2307@1: 71483 keys, 2029538 bytes
+2026/01/27-15:26:34.840 1004d Compacted 1@1 + 10@2 files => 22086539 bytes
+2026/01/27-15:26:34.843 1004d compacted to: files[ 0 1 56 0 0 0 0 ]
+2026/01/27-15:26:34.843 1004d Delete type=2 #2277
+2026/01/27-15:26:34.843 1004d Delete type=2 #2276
+2026/01/27-15:26:34.843 1004d Delete type=2 #2275
+2026/01/27-15:26:34.843 1004d Delete type=2 #2278
+2026/01/27-15:26:34.843 1004d Delete type=2 #2279
+2026/01/27-15:26:34.843 1004d Delete type=2 #2284
+2026/01/27-15:26:34.844 1004d Delete type=2 #2281
+2026/01/27-15:26:34.844 1004d Delete type=2 #2280
+2026/01/27-15:26:34.844 1004d Delete type=2 #2282
+2026/01/27-15:26:34.844 1004d Delete type=2 #2283
+2026/01/27-15:26:34.844 1004d Delete type=2 #2297
+2026/01/27-15:26:35.010 1004d Compacting 1@1 + 4@2 files
+2026/01/27-15:26:35.050 1004d Generated table #2308@1: 89915 keys, 2241598 bytes
+2026/01/27-15:26:35.075 1004d Generated table #2309@1: 25978 keys, 2214455 bytes
+2026/01/27-15:26:35.113 1004d Generated table #2310@1: 66825 keys, 2232383 bytes
+2026/01/27-15:26:35.141 1004d Generated table #2311@1: 33466 keys, 2195190 bytes
+2026/01/27-15:26:35.144 1004d Generated table #2312@1: 110 keys, 111955 bytes
+2026/01/27-15:26:35.144 1004d Compacted 1@1 + 4@2 files => 8995581 bytes
+2026/01/27-15:26:35.147 1004d compacted to: files[ 0 0 57 0 0 0 0 ]
+2026/01/27-15:26:35.147 1004d Delete type=2 #2288
+2026/01/27-15:26:35.147 1004d Delete type=2 #2289
+2026/01/27-15:26:35.147 1004d Delete type=2 #2287
+2026/01/27-15:26:35.147 1004d Delete type=2 #2286
+2026/01/27-15:26:35.147 1004d Delete type=2 #2296
