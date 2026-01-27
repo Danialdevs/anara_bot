@@ -16,7 +16,7 @@ const TARGET_GROUP_IDS = [
     '120363424485707391@g.us', // ЗАКАЗЫ
     '120363407941956163@g.us'  // ЧАТ БОЛТАЛКА
 ];
-const NOTIFY_PHONE = '77054019576@c.us'; // +7 705 401 9576
+const NOTIFY_PHONE = '77079177470@c.us'; // +7 707 917 7470
 
 // ============ EXPRESS + SOCKET.IO ============
 const app = express();
@@ -213,7 +213,7 @@ client.on('group_join', async (notification) => {
         io.emit('user_added', { chatId, userId: realUserId });
 
         // Send notification
-        await sendNotification(`✅ Новый участник добавлен\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
+        sendNotification(`✅ Новый участник добавлен\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
     }
 });
 
@@ -257,7 +257,7 @@ async function checkExpiredAndRemove() {
                     io.emit('user_removed', { chatId: user.chatId, userId: user.userId });
 
                     // Send notification about removal
-                    await sendNotification(`❌ Участник удалён (истёк срок)\n📱 ${formatPhone(user.userId)}\n📋 Группа: ${user.chatId.split('@')[0]}`);
+                    sendNotification(`❌ Участник удалён (истёк срок)\n📱 ${formatPhone(user.userId)}\n📋 Группа: ${user.chatId.split('@')[0]}`);
                 }
             } catch (err) {
                 console.error(`  ⚠️ Failed:`, err.message);
