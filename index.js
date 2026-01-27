@@ -65,6 +65,10 @@ function formatPhone(userId) {
 
 // Send notification to Telegram
 async function sendNotification(message) {
+    console.log('📤 Sending Telegram notification...');
+    console.log('   Chat ID:', TELEGRAM_CHAT_ID);
+    console.log('   Message:', message.substring(0, 50) + '...');
+
     try {
         const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
         const response = await fetch(url, {
@@ -72,18 +76,20 @@ async function sendNotification(message) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: TELEGRAM_CHAT_ID,
-                text: message,
-                parse_mode: 'HTML'
+                text: message
             })
         });
         const data = await response.json();
+        console.log('   Telegram response:', JSON.stringify(data));
+
         if (data.ok) {
-            console.log('📩 Telegram notification sent');
+            console.log('📩 Telegram notification sent successfully!');
         } else {
-            console.error('Telegram error:', data.description);
+            console.error('❌ Telegram error:', data.error_code, data.description);
         }
     } catch (err) {
-        console.error('Failed to send Telegram notification:', err.message);
+        console.error('❌ Failed to send Telegram notification:', err.message);
+        console.error('   Full error:', err);
     }
 }
 
