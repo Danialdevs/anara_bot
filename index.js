@@ -9,7 +9,7 @@ const storage = require('./storage');
 
 // ============ CONFIGURATION ============
 const EXPIRY_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month)
-const CHECK_INTERVAL = 1 * 60 * 1000; // Every 1 minute (for testing)
+const CHECK_INTERVAL = 3 * 60 * 60 * 1000; // Every 3 hours
 const ADMIN_PORT = 3000;
 const TARGET_GROUP_IDS = [
     '120363424613797548@g.us', // РАССЫЛКИ
