@@ -8,8 +8,8 @@ const path = require('path');
 const storage = require('./storage');
 
 // ============ CONFIGURATION ============
-const EXPIRY_TIME_MS = 1 * 60 * 1000; // 1 minute for testing
-const CHECK_INTERVAL = 30 * 1000;
+const EXPIRY_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month)
+const CHECK_INTERVAL = 3 * 60 * 60 * 1000; // Every 3 hours
 const ADMIN_PORT = 3000;
 const TARGET_GROUP_IDS = [];
 
@@ -219,8 +219,9 @@ client.on('group_update', async (notification) => {
     }
 });
 
-// Periodic check
-setInterval(async () => {
+// Check for expired users at 3:00 AM daily
+async function checkExpiredAndRemove() {
+    console.log('🕐 Running daily expiry check...');
     const expiredUsers = storage.checkExpiredUsers(EXPIRY_TIME_MS);
     if (expiredUsers.length > 0) {
         console.log(`⏰ Found ${expiredUsers.length} expired`);
@@ -238,7 +239,12 @@ setInterval(async () => {
                 storage.markUserFailed(user.chatId, user.userId, err.message || 'Unknown');
             }
         }
+    } else {
+        console.log('✅ No expired users');
     }
-}, CHECK_INTERVAL);
+}
+
+// Check every 3 hours
+setInterval(checkExpiredAndRemove, CHECK_INTERVAL);
 
 client.initialize();
