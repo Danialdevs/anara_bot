@@ -141,7 +141,11 @@ server.listen(ADMIN_PORT, () => {
 
 // ============ WHATSAPP CLIENT ============
 const client = new Client({
-    authStrategy: new LocalAuth()
+    authStrategy: new LocalAuth(),
+    puppeteer: {
+        executablePath: '/snap/bin/chromium',
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
 });
 
 client.on('qr', async (qr) => {
