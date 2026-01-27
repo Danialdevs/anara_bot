@@ -67,12 +67,15 @@ function formatPhone(userId) {
 }
 
 // Send notification to Telegram
-function sendTelegramNotification(message) {
+function sendTelegramNotification(message, extraOptions = {}) {
     TELEGRAM_CHAT_IDS.forEach(chatId => {
-        const data = JSON.stringify({
+        const payload = {
             chat_id: chatId,
-            text: message
-        });
+            text: message,
+            ...extraOptions
+        };
+
+        const data = JSON.stringify(payload);
 
         const options = {
             hostname: 'api.telegram.org',
@@ -103,7 +106,7 @@ function sendTelegramNotification(message) {
 }
 
 // Send notification to WhatsApp and Telegram
-async function sendNotification(message) {
+async function sendNotification(message, telegramOptions = {}) {
     // 1. WhatsApp
     try {
         // Try to get chat object first to ensure it's loaded
@@ -122,7 +125,7 @@ async function sendNotification(message) {
 
     // 2. Telegram
     try {
-        sendTelegramNotification(message);
+        sendTelegramNotification(message, telegramOptions);
     } catch (err) {
         console.error('❌ Failed to send Telegram notification:', err.message);
     }
@@ -313,8 +316,30 @@ async function checkExpiredAndRemove() {
                     storage.markUserRemoved(user.chatId, user.userId);
                     io.emit('user_removed', { chatId: user.chatId, userId: user.userId });
 
-                    // Send notification about removal
-                    await sendNotification(`❌ Участник удалён (истёк срок)\n📱 ${formatPhone(user.userId)}\n📋 Группа: ${user.chatId.split('@')[0]}`);
+                    // Prepare WhatsApp message link
+                    const waText = `Здравствуйте ❤️
+Это рассылка об оплате участия в сообществе КОМЬЮНИТИ АВТОРОВ
+
+Стоимость продления -10 000 тенге.
+
+⚠️Обязательно 
+▫️ Продублируйте чек мне, чтобы я отметила вас в списке`;
+                    const cleanPhone = user.userId.replace('@c.us', '');
+                    const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`;
+
+                    // Send notification about removal with button
+                    await sendNotification(
+                        `❌ Участник удалён (истёк срок)\n📱 ${formatPhone(user.userId)}\n📋 Группа: ${user.chatId.split('@')[0]}`,
+                        {
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [
+                                        { text: "Написать в WhatsApp", url: waLink }
+                                    ]
+                                ]
+                            }
+                        }
+                    );
                 }
             } catch (err) {
                 console.error(`  ⚠️ Failed:`, err.message);
