@@ -11,7 +11,11 @@ const storage = require('./storage');
 const EXPIRY_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month)
 const CHECK_INTERVAL = 3 * 60 * 60 * 1000; // Every 3 hours
 const ADMIN_PORT = 3000;
-const TARGET_GROUP_IDS = [];
+const TARGET_GROUP_IDS = [
+    '120363424613797548@g.us', // РАССЫЛКИ
+    '120363424485707391@g.us', // ЗАКАЗЫ
+    '120363407941956163@g.us'  // ЧАТ БОЛТАЛКА
+];
 const NOTIFY_PHONE = '77054019576@c.us'; // +7 705 401 9576
 
 // ============ EXPRESS + SOCKET.IO ============
