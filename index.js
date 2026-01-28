@@ -6,6 +6,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const storage = require('./storage');
 
 // ============ CONFIGURATION ============
@@ -107,20 +108,24 @@ function sendTelegramNotification(message, extraOptions = {}) {
 
 // Send notification to WhatsApp and Telegram
 async function sendNotification(message, telegramOptions = {}) {
-    // 1. WhatsApp
-    try {
-        // Try to get chat object first to ensure it's loaded
-        const chat = await client.getChatById(NOTIFY_PHONE);
-        await chat.sendMessage(message);
-        console.log('📩 WhatsApp notification sent to', NOTIFY_PHONE);
-    } catch (err) {
-        console.error('❌ First attempt failed, retrying direct send:', err.message);
+    // 1. WhatsApp - только если клиент ready
+    if (clientStatus === 'ready') {
         try {
-            await client.sendMessage(NOTIFY_PHONE, message);
-            console.log('📩 WhatsApp notification sent (direct)');
-        } catch (e) {
-            console.error('❌ Failed to send WhatsApp notification:', e.message);
+            // Try to get chat object first to ensure it's loaded
+            const chat = await client.getChatById(NOTIFY_PHONE);
+            await chat.sendMessage(message);
+            console.log('📩 WhatsApp notification sent to', NOTIFY_PHONE);
+        } catch (err) {
+            console.error('❌ First attempt failed, retrying direct send:', err.message);
+            try {
+                await client.sendMessage(NOTIFY_PHONE, message);
+                console.log('📩 WhatsApp notification sent (direct)');
+            } catch (e) {
+                console.error('❌ Failed to send WhatsApp notification:', e.message);
+            }
         }
+    } else {
+        console.warn('⚠️ WhatsApp client not ready, skipping WhatsApp notification');
     }
 
     // 2. Telegram
@@ -204,11 +209,44 @@ server.listen(ADMIN_PORT, () => {
 });
 
 // ============ WHATSAPP CLIENT ============
+// Используем абсолютный путь для сохранения сессии независимо от рабочей директории
+const authDataPath = path.join(__dirname, '.wwebjs');
+
+// Определяем путь к Chrome/Chromium
+// Приоритет: CHROME_PATH env var > google-chrome > chromium
+function getChromePath() {
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+    
+    const chromePaths = [
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium-browser',
+        '/snap/bin/chromium'
+    ];
+    
+    for (const chromePath of chromePaths) {
+        if (fs.existsSync(chromePath)) {
+            return chromePath;
+        }
+    }
+    
+    // Fallback на chromium если ничего не найдено
+    return '/snap/bin/chromium';
+}
+
+const chromeExecutablePath = getChromePath();
+console.log(`🔧 Using Chrome/Chromium: ${chromeExecutablePath}`);
+
 const client = new Client({
-    authStrategy: new LocalAuth(),
+    authStrategy: new LocalAuth({
+        clientId: 'anara_bot',  // Фиксированное имя клиента
+        dataPath: authDataPath  // Абсолютный путь к директории с сессией
+    }),
     puppeteer: {
-        executablePath: '/snap/bin/chromium',
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        executablePath: chromeExecutablePath,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
     }
 });
 
@@ -297,6 +335,53 @@ client.on('group_update', async (notification) => {
             console.log(`  Tracking: ${realUserId}`);
             storage.addUser(chatId, realUserId);
             io.emit('user_added', { chatId, userId: realUserId });
+
+            // Send notification
+            await sendNotification(`✅ Новый участник добавлен\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
+        }
+    }
+});
+
+// Дополнительная обработка через message_create для более надежного обнаружения новых участников
+client.on('message_create', async (msg) => {
+    // Обрабатываем только системные сообщения групп (gp2)
+    if (msg.type !== 'gp2') return;
+    
+    const chatId = msg.from;
+    if (TARGET_GROUP_IDS.length > 0 && !TARGET_GROUP_IDS.includes(chatId)) return;
+
+    // Проверяем подтип сообщения - может быть add/invite
+    const body = msg.body || '';
+    
+    // WhatsApp системные сообщения о добавлении обычно содержат ключевые слова
+    // или можно проверить через msg.mentionedIds / msg.recipientIds
+    if (msg.recipientIds && msg.recipientIds.length > 0) {
+        // Похоже на событие добавления участника
+        for (const recipientId of msg.recipientIds) {
+            // Проверяем, не обработали ли мы уже этого пользователя
+            const users = storage.readUsers();
+            const alreadyTracked = users.some(u => 
+                u.userId === recipientId && u.chatId === chatId && u.status !== 'manually_removed'
+            );
+            
+            if (!alreadyTracked) {
+                let realUserId = recipientId;
+                
+                try {
+                    const contact = await client.getContactById(recipientId);
+                    if (contact && contact.number) {
+                        realUserId = contact.number + '@c.us';
+                        console.log(`  [message_create] Resolved phone: ${contact.number}`);
+                    }
+                } catch (e) { }
+
+                console.log(`  [message_create] Tracking: ${realUserId}`);
+                storage.addUser(chatId, realUserId);
+                io.emit('user_added', { chatId, userId: realUserId });
+                
+                // Send notification
+                await sendNotification(`✅ Новый участник добавлен (через message)\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
+            }
         }
     }
 });
@@ -317,15 +402,9 @@ async function checkExpiredAndRemove() {
                     io.emit('user_removed', { chatId: user.chatId, userId: user.userId });
 
                     // Prepare WhatsApp message link
-                    const waText = `Здравствуйте ❤️
-Это рассылка об оплате участия в сообществе КОМЬЮНИТИ АВТОРОВ
-
-Стоимость продления -10 000 тенге.
-
-⚠️Обязательно 
-▫️ Продублируйте чек мне, чтобы я отметила вас в списке`;
+                    const waText = "Здравствуйте ❤️\nЭто рассылка об оплате участия в сообществе КОМЬЮНИТИ АВТОРОВ\n\nСтоимость продления -10 000 тенге.\n\n⚠️Обязательно \n▫️ Продублируйте чек мне, чтобы я отметила вас в списке";
                     const cleanPhone = user.userId.replace('@c.us', '');
-                    const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waText)}`;
+                    const waLink = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(waText)}`;
 
                     // Send notification about removal with button
                     await sendNotification(
