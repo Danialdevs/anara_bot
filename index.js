@@ -218,20 +218,20 @@ function getChromePath() {
     if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
         return process.env.CHROME_PATH;
     }
-    
+
     const chromePaths = [
         '/usr/bin/google-chrome',
         '/usr/bin/google-chrome-stable',
         '/usr/bin/chromium-browser',
         '/snap/bin/chromium'
     ];
-    
+
     for (const chromePath of chromePaths) {
         if (fs.existsSync(chromePath)) {
             return chromePath;
         }
     }
-    
+
     // Fallback на chromium если ничего не найдено
     return '/snap/bin/chromium';
 }
@@ -244,9 +244,26 @@ const client = new Client({
         clientId: 'anara_bot',  // Фиксированное имя клиента
         dataPath: authDataPath  // Абсолютный путь к директории с сессией
     }),
+    authTimeoutMs: 120000, // 2 минуты на авторизацию
+    qrMaxRetries: 5,
     puppeteer: {
         executablePath: chromeExecutablePath,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        headless: true,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-extensions',
+            '--disable-software-rasterizer',
+            '--disable-features=site-per-process',
+            '--js-flags=--max-old-space-size=512'
+        ],
+        timeout: 120000 // 2 минуты таймаут для Puppeteer
     }
 });
 
@@ -346,13 +363,13 @@ client.on('group_update', async (notification) => {
 client.on('message_create', async (msg) => {
     // Обрабатываем только системные сообщения групп (gp2)
     if (msg.type !== 'gp2') return;
-    
+
     const chatId = msg.from;
     if (TARGET_GROUP_IDS.length > 0 && !TARGET_GROUP_IDS.includes(chatId)) return;
 
     // Проверяем подтип сообщения - может быть add/invite
     const body = msg.body || '';
-    
+
     // WhatsApp системные сообщения о добавлении обычно содержат ключевые слова
     // или можно проверить через msg.mentionedIds / msg.recipientIds
     if (msg.recipientIds && msg.recipientIds.length > 0) {
@@ -360,13 +377,13 @@ client.on('message_create', async (msg) => {
         for (const recipientId of msg.recipientIds) {
             // Проверяем, не обработали ли мы уже этого пользователя
             const users = storage.readUsers();
-            const alreadyTracked = users.some(u => 
+            const alreadyTracked = users.some(u =>
                 u.userId === recipientId && u.chatId === chatId && u.status !== 'manually_removed'
             );
-            
+
             if (!alreadyTracked) {
                 let realUserId = recipientId;
-                
+
                 try {
                     const contact = await client.getContactById(recipientId);
                     if (contact && contact.number) {
@@ -378,7 +395,7 @@ client.on('message_create', async (msg) => {
                 console.log(`  [message_create] Tracking: ${realUserId}`);
                 storage.addUser(chatId, realUserId);
                 io.emit('user_added', { chatId, userId: realUserId });
-                
+
                 // Send notification
                 await sendNotification(`✅ Новый участник добавлен (через message)\n📱 ${formatPhone(realUserId)}\n📋 Группа: ${chatId.split('@')[0]}`);
             }
