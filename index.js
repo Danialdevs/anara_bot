@@ -274,14 +274,40 @@ client.on('qr', async (qr) => {
     console.log('📱 Scan QR code (also available in admin panel)');
 });
 
+// Таймаут для ready - если не получаем ready за 3 минуты после authenticated, перезапускаем
+let readyTimeout = null;
+
 client.on('authenticated', () => {
     clientStatus = 'authenticated';
     currentQR = null;
     io.emit('status', { status: clientStatus });
     console.log('✅ Authenticated');
+
+    // Устанавливаем таймаут на 3 минуты
+    if (readyTimeout) clearTimeout(readyTimeout);
+    readyTimeout = setTimeout(() => {
+        console.error('❌ Timeout: ready event not received in 3 minutes, restarting...');
+        process.exit(1); // PM2 перезапустит процесс
+    }, 180000);
+});
+
+client.on('loading_screen', (percent, message) => {
+    console.log(`⏳ Loading: ${percent}% - ${message}`);
+});
+
+client.on('auth_failure', (msg) => {
+    console.error('❌ Authentication failure:', msg);
+    clientStatus = 'auth_failure';
+    io.emit('status', { status: clientStatus });
 });
 
 client.on('ready', async () => {
+    // Очищаем таймаут
+    if (readyTimeout) {
+        clearTimeout(readyTimeout);
+        readyTimeout = null;
+    }
+
     clientStatus = 'ready';
     currentQR = null;
     io.emit('status', { status: clientStatus });
