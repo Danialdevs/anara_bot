@@ -327,6 +327,7 @@ const client = new Client({
     puppeteer: {
         executablePath: chromeExecutablePath,
         headless: true,
+        protocolTimeout: 120000, // 2 минуты для протокола
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -391,11 +392,18 @@ client.on('ready', async () => {
     io.emit('status', { status: clientStatus });
     console.log('✅ WhatsApp ready!');
 
-    console.log('\n--- GROUPS ---');
-    const chats = await client.getChats();
-    const groups = chats.filter(chat => chat.isGroup);
-    groups.forEach(g => console.log(`${g.name} | ${g.id._serialized}`));
-    console.log('--------------\n');
+    // Загрузка групп с задержкой и обработкой ошибок
+    setTimeout(async () => {
+        try {
+            console.log('\n--- GROUPS ---');
+            const chats = await client.getChats();
+            const groups = chats.filter(chat => chat.isGroup);
+            groups.forEach(g => console.log(`${g.name} | ${g.id._serialized}`));
+            console.log('--------------\n');
+        } catch (err) {
+            console.error('⚠️ Failed to load groups:', err.message);
+        }
+    }, 5000); // 5 секунд задержка
 });
 
 client.on('disconnected', (reason) => {
