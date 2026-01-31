@@ -13,7 +13,7 @@ const storage = require('./storage');
 const EXPIRY_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month)
 const CHECK_INTERVAL = 1 * 60 * 1000; // Every 1 minute
 const ADMIN_PORT = 3000;
-const TARGET_GROUP_IDS = [
+const TARGET_GROUP_IDS = [соня
     '120363424613797548@g.us', // РАССЫЛКИ
     '120363424485707391@g.us', // ЗАКАЗЫ
     '120363407941956163@g.us'  // ЧАТ БОЛТАЛКА
@@ -197,6 +197,84 @@ app.get('/api/status', (req, res) => {
     res.json({ status: clientStatus, qr: currentQR });
 });
 
+// API: Sync all participants from target groups
+app.post('/api/sync-participants', async (req, res) => {
+    if (clientStatus !== 'ready') {
+        return res.status(400).json({ error: 'WhatsApp not connected' });
+    }
+
+    try {
+        const results = {
+            total: 0,
+            added: 0,
+            skipped: 0,
+            groups: []
+        };
+
+        for (const groupId of TARGET_GROUP_IDS) {
+            try {
+                const chat = await client.getChatById(groupId);
+                if (!chat.isGroup) continue;
+
+                const groupResult = {
+                    id: groupId,
+                    name: chat.name,
+                    participants: 0,
+                    added: 0
+                };
+
+                const participants = chat.participants || [];
+
+                for (const participant of participants) {
+                    let realUserId = participant.id._serialized;
+
+                    // Try to get real phone number
+                    try {
+                        const contact = await client.getContactById(realUserId);
+                        if (contact && contact.number) {
+                            realUserId = contact.number + '@c.us';
+                        }
+                    } catch (e) { }
+
+                    // Check if already tracked
+                    const users = storage.readUsers();
+                    const alreadyTracked = users.some(u =>
+                        u.userId === realUserId && u.chatId === groupId && u.status !== 'manually_removed'
+                    );
+
+                    if (!alreadyTracked) {
+                        storage.addUser(groupId, realUserId);
+                        groupResult.added++;
+                        results.added++;
+                    } else {
+                        results.skipped++;
+                    }
+
+                    groupResult.participants++;
+                    results.total++;
+                }
+
+                results.groups.push(groupResult);
+                console.log(`✅ Synced group ${chat.name}: ${groupResult.added} new, ${groupResult.participants} total`);
+
+            } catch (err) {
+                console.error(`❌ Failed to sync group ${groupId}:`, err.message);
+                results.groups.push({
+                    id: groupId,
+                    error: err.message
+                });
+            }
+        }
+
+        io.emit('sync_complete', results);
+        res.json(results);
+
+    } catch (err) {
+        console.error('❌ Sync failed:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Socket.IO connection
 io.on('connection', (socket) => {
     console.log('Admin connected');
@@ -324,6 +402,13 @@ client.on('disconnected', (reason) => {
     clientStatus = 'disconnected';
     io.emit('status', { status: clientStatus });
     console.log('❌ Disconnected:', reason);
+
+    // Автопереподключение через 5 секунд
+    console.log('🔄 Attempting to reconnect in 5 seconds...');
+    setTimeout(() => {
+        console.log('🔄 Restarting process for reconnection...');
+        process.exit(1); // PM2 перезапустит процесс
+    }, 5000);
 });
 
 client.on('group_join', async (notification) => {

@@ -235,6 +235,17 @@
             padding: 10px 20px;
         }
 
+        .btn-sync {
+            background: linear-gradient(90deg, #00ff88, #00d2ff);
+            padding: 10px 20px;
+        }
+
+        .btn-sync:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         .group-id {
             max-width: 180px;
             overflow: hidden;
@@ -271,6 +282,7 @@
         <div class="controls">
             <input type="text" class="search-box" id="searchInput" placeholder="🔍 Поиск по номеру...">
             <button class="btn-refresh" onclick="loadUsers()">🔄 Обновить</button>
+            <button class="btn-sync" id="syncBtn" onclick="syncParticipants()">📥 Синхронизировать участников</button>
         </div>
 
         <div class="stats">
@@ -415,6 +427,37 @@
             await fetch(`/api/users/${id}`, { method: 'DELETE' });
             loadUsers();
         }
+
+        async function syncParticipants() {
+            const btn = document.getElementById('syncBtn');
+            const originalText = btn.textContent;
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Синхронизация...';
+
+            try {
+                const res = await fetch('/api/sync-participants', { method: 'POST' });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(`✅ Синхронизация завершена!\n\n📊 Всего участников: ${data.total}\n✨ Добавлено новых: ${data.added}\n⏭️ Пропущено (уже есть): ${data.skipped}`);
+                    loadUsers();
+                } else {
+                    alert('❌ Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch (err) {
+                alert('❌ Ошибка соединения: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Handle sync complete event
+        socket.on('sync_complete', (data) => {
+            console.log('Sync complete:', data);
+            loadUsers();
+        });
 
         loadUsers();
         setInterval(loadUsers, 30000);
