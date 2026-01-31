@@ -13,7 +13,7 @@ const storage = require('./storage');
 const EXPIRY_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (1 month)
 const CHECK_INTERVAL = 1 * 60 * 1000; // Every 1 minute
 const ADMIN_PORT = 3000;
-const TARGET_GROUP_IDS = [соня
+const TARGET_GROUP_IDS = [
     '120363424613797548@g.us', // РАССЫЛКИ
     '120363424485707391@g.us', // ЗАКАЗЫ
     '120363407941956163@g.us'  // ЧАТ БОЛТАЛКА
