@@ -255,13 +255,9 @@ const client = new Client({
             '--disable-dev-shm-usage',
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
-            '--no-zygote',
-            '--single-process',
             '--disable-gpu',
             '--disable-extensions',
-            '--disable-software-rasterizer',
-            '--disable-features=site-per-process',
-            '--js-flags=--max-old-space-size=512'
+            '--disable-software-rasterizer'
         ],
         timeout: 120000 // 2 минуты таймаут для Puppeteer
     }
