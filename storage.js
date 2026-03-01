@@ -80,10 +80,8 @@ function checkExpiredUsers(defaultExpiryMs) {
     };
 
     users.forEach(user => {
-        if (user.status === 'active') {
-            // Check custom expiry
+        if (user.status === 'active' || user.status === 'failed') {
             if (user.expiresAt === 'never') {
-                // Never expires, skip
                 return;
             }
 

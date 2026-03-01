@@ -520,6 +520,10 @@ client.on('message_create', async (msg) => {
 
 // Check for expired users every 1 minute
 async function checkExpiredAndRemove() {
+    if (clientStatus !== 'ready') {
+        console.log('⏳ Skipping expiry check - WhatsApp not ready');
+        return;
+    }
     console.log('🕐 Running expiry check...');
     const expiredUsers = storage.checkExpiredUsers(EXPIRY_TIME_MS);
     if (expiredUsers.length > 0) {

@@ -387,7 +387,7 @@
                     <td>${formatDate(u.joinedAt)}</td>
                     <td>
                         <select onchange="updateExpiry(${u.id}, this.value)">
-                            <option value="" ${!u.expiresAt ? 'selected' : ''}>По умолчанию</option>
+                            <option value="" ${!u.expiresAt ? 'selected' : ''}>По умолчанию (30д)</option>
                             <option value="2min" ${u.expiresAt === '2min' ? 'selected' : ''}>2 мин (тест)</option>
                             <option value="5min" ${u.expiresAt === '5min' ? 'selected' : ''}>5 мин (тест)</option>
                             <option value="10min" ${u.expiresAt === '10min' ? 'selected' : ''}>10 мин (тест)</option>
@@ -396,6 +396,7 @@
                             <option value="3months" ${u.expiresAt === '3months' ? 'selected' : ''}>3 месяца</option>
                             <option value="never" ${u.expiresAt === 'never' ? 'selected' : ''}>Навсегда</option>
                         </select>
+                        <div style="margin-top:4px;font-size:0.75rem;color:#aaa">${getExpiryInfo(u)}</div>
                     </td>
                     <td><span class="status-badge ${u.status}">${getStatus(u.status)}</span></td>
                     <td>${u.status === 'active' ? `<button onclick="removeUser(${u.id})">Удалить</button>` : '-'}</td>
@@ -411,6 +412,36 @@
 
         function getStatus(s) {
             return { active: 'Активен', removed: 'Удалён', manually_removed: 'Удалён', expired: 'Истёк', failed: 'Ошибка' }[s] || s;
+        }
+
+        function getExpiryInfo(user) {
+            if (user.status !== 'active' && user.status !== 'failed') return '-';
+            if (user.expiresAt === 'never') return 'Навсегда';
+
+            const presets = {
+                '2min': 2 * 60 * 1000,
+                '5min': 5 * 60 * 1000,
+                '10min': 10 * 60 * 1000,
+                '1month': 30 * 24 * 60 * 60 * 1000,
+                '2months': 60 * 24 * 60 * 60 * 1000,
+                '3months': 90 * 24 * 60 * 60 * 1000
+            };
+
+            const duration = (user.expiresAt && presets[user.expiresAt]) ? presets[user.expiresAt] : 30 * 24 * 60 * 60 * 1000;
+            const joined = new Date(user.joinedAt);
+            const expiryDate = new Date(joined.getTime() + duration);
+            const now = new Date();
+            const diff = expiryDate - now;
+
+            if (diff <= 0) return '<span style="color:#ff6b6b">Просрочен!</span>';
+
+            const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+
+            const dateStr = expiryDate.toLocaleDateString('ru-RU') + ' ' + expiryDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+
+            if (days > 0) return `${dateStr} <br><small style="color:#ffc107">(${days}д ${hours}ч)</small>`;
+            return `${dateStr} <br><small style="color:#ff6b6b">(${hours}ч)</small>`;
         }
 
         async function updateExpiry(id, val) {
